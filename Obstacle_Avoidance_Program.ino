@@ -63,12 +63,17 @@ void time(int timer) {
 }
 
 void moveForward() {
-  digitalWrite(motorA1, HIGH);
-  digitalWrite(motorA2, LOW);
-  analogWrite(motorA_pwm, rightmotorspeed);
-  digitalWrite(motorB1, HIGH);
-  digitalWrite(motorB2, LOW);
-  analogWrite(motorB_pwm, leftmotorspeed);
+  while (!checkObstacle()) {
+    Serial.println(checkObstacle());
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, rightmotorspeed);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, leftmotorspeed);
+  }
+  obstTurn(true);
+  Serial.println(checkObstacle());
 }
 
 void stopMotors() {
@@ -98,8 +103,12 @@ bool checkObstacle() {
   delay(1000);
 
   if ( distance > maxObstDistance ) {
+    Serial.print("Obstacle Detected at a distance of ")
+    Serial.print(distance);
+    Serial.println(" cm!!!!!!!!");
     return true;
   }
+  Serial.print("None can stop me. Not even walls.");
   return false;
 }
 
@@ -107,6 +116,8 @@ bool checkObstacle() {
 //timed rotation
 void timedTurn(bool right) {
   startTime = micros();
+  Serial.println(startTime);
+  Serial.println("Starting turn.");
   
   while ( (micros() - startTime) < timeRotate ) {
     if (right==true) {
@@ -126,7 +137,9 @@ void timedTurn(bool right) {
       analogWrite(motorB_pwm, 0);
     }
   }
+  Serial.println("Ended turn.");
   stopMotors();
+  delay(1000);
 }
 
 //right is 1, left is 0
@@ -164,7 +177,6 @@ void obstTurn (bool right) {
       timedTurn(right, timeRotate);
     }
   }
-  Serial.print("I'M STUCK");*/
+  Serial.println("I'M STUCK");*/
 
 }
-
