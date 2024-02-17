@@ -39,6 +39,15 @@ MPU6050 mpu6050(Wire);
 float lastAccelX = 0.0;
 float movementDistThreshold = 0.5;
 
+void time(int timer);
+void moveForward();
+bool humanMovement();
+void obstTurn (bool right);
+void stopMotors();
+bool checkObstacle();
+void timedTurn(bool right);
+void obstTurn (bool right);
+
 void setup() {
   // Motor control pins as OUTPUT
   pinMode(motorA_pwm, OUTPUT);
@@ -66,7 +75,7 @@ void setup() {
 void loop() {
   timedTurn(true);
   delay(2000);
-  checkObstacle();
+  bool obstaced_detected = checkObstacle();
   delay(1000);
 }
 
@@ -141,7 +150,7 @@ bool checkObstacle() {
   distance2 = (duration2 * 0.0343) / 2;
   delay(1000);
 
-  if ( distance1 > maxObstDistance || distance2 > maxObstDistance) {
+  if ( distance1 >= maxObstDistance || distance2 >= maxObstDistance) {
     Serial.print("Obstacle Detected at a distance of ");
     Serial.println("Dist1 = ");
     Serial.println(distance1);
