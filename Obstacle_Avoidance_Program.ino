@@ -15,9 +15,11 @@ int leftmotorspeed = 200;
 int rightmotorspeed = 200;
 int maxObstDistance = 30;
 
-// Define ultrasonic sensor pins
-const int trigPin = 9;
-const int echoPin = 8;
+// Define ultrasonic sensor pins DONE!!!!
+const int trigPin1 = 13;
+const int echoPin1 = 12;
+const int trigPin2 = 10;
+const int echoPin2 = 11;
 
 // Timer in microseconds
 unsigned long startTime = 0;
@@ -53,7 +55,8 @@ void setup() {
 }
 
 void loop() {
-  timedTurn(true, 5000000);
+  //timedTurn(true, 5000000);
+
 }
 
 //timer is the amount of time you want the program to execute something
@@ -87,25 +90,35 @@ void stopMotors() {
 
 //Obstacle detected = true, Obstacle not detected = false.
 bool checkObstacle() {
-  long distance, duration;
+  long distance1, distance2, duration1, duration2;
 
   // Trigger ultrasonic sensor
-  digitalWrite(trigPin, LOW);
+  digitalWrite(trigPin1, LOW);
+  digitalWrite(trigPin2, LOW);
   delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(trigPin1, HIGH);
+  digitalWrite(trigPin2, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  digitalWrite(trigPin1, LOW);
+  digitalWrite(trigPin2, LOW);
+  delayMicroseconds(2);
 
   // Read the time taken for the ultrasonic pulse to return
-  duration = pulseIn(echoPin, HIGH, 10000);
+  duration1 = pulseIn(echoPin1, HIGH, 10000);
+  duration2 = pulseIn(echoPin2, HIGH, 10000);
   //Calculate distance of obstacle if there.
-  distance = (duration * 0.0343) / 2;
+  distance1 = (duration1 * 0.0343) / 2;
+  distance2 = (duration2 * 0.0343) / 2;
   delay(1000);
 
-  if ( distance > maxObstDistance ) {
-    Serial.print("Obstacle Detected at a distance of ")
-    Serial.print(distance);
-    Serial.println(" cm!!!!!!!!");
+  if ( distance1 > maxObstDistance || distance2 > maxObstDistance) {
+    Serial.print("Obstacle Detected at a distance of ");
+    Serial.println("Dist1 = ");
+    Serial.println(distance1);
+    Serial.print(" cm!!!!!!!!");
+    Serial.println("Dist2 = ");
+    Serial.println(distance2);
+    Serial.print(" cm!!!!!!!!");
     return true;
   }
   Serial.print("None can stop me. Not even walls.");
@@ -178,5 +191,4 @@ void obstTurn (bool right) {
     }
   }
   Serial.println("I'M STUCK");*/
-
 }
