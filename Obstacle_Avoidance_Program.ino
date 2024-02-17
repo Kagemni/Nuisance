@@ -29,7 +29,7 @@ const int echoPin2 = 9;
 unsigned long startTime = 0;
 unsigned long elapsedTime = 0;
 bool isTimerRunning = false;
-int timeRotate = 3500000; //3.5 seconds?
+int timeRotate = 4000000; //3.5 seconds?
 int stuckTimer = 5000000; //5 seconds?
 
 //MPU6050 Gyro & Accelerometer
@@ -60,8 +60,10 @@ void setup() {
 }
 
 void loop() {
-  //timedTurn(true, 5000000);
-
+  timedTurn(true);
+  delay(2000);
+  checkObstacle();
+  delay(1000);
 }
 
 //timer is the amount of time you want the program to execute something
