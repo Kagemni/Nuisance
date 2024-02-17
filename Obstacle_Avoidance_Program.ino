@@ -10,16 +10,20 @@ const int motorB_pwm = 3; // ENB pin on L298N
 const int motorB1 = 4;    // IN3 pin on L298N
 const int motorB2 = 2;    // IN4 pin on L298N
 
+//PIR pin
+int pirPin = 2;
+int pirState = LOW;
+
 int triggerDistance = 20;
-int leftmotorspeed = 200;
-int rightmotorspeed = 200;
+int normMotorSpeed = 200;
+int HIGHmotorspeed = 400;
 int maxObstDistance = 30;
 
 // Define ultrasonic sensor pins DONE!!!!
-const int trigPin1 = 13;
-const int echoPin1 = 12;
+const int trigPin1 = 12;
+const int echoPin1 = 11;
 const int trigPin2 = 10;
-const int echoPin2 = 11;
+const int echoPin2 = 9;
 
 // Timer in microseconds
 unsigned long startTime = 0;
@@ -28,9 +32,10 @@ bool isTimerRunning = false;
 int timeRotate = 3500000; //3.5 seconds?
 int stuckTimer = 5000000; //5 seconds?
 
-/*MPU6050 Gyro & Accelerometer
+//MPU6050 Gyro & Accelerometer
 MPU6050 mpu6050(Wire);
-float elapsedTime = 0.01;*/
+float lastAccelX = 0.0;
+float movementDistThreshold = 0.5;
 
 void setup() {
   // Motor control pins as OUTPUT
@@ -78,6 +83,25 @@ void moveForward() {
   obstTurn(true);
   Serial.println(checkObstacle());
 }
+
+//returns true if human movement detected, and false if not
+bool humanMovement() {
+  //Read PIR and accelerometer's values
+  int pirValue = digitalRead(pirPin);
+  mpu6050.update();
+  float accelX = mpu6050.getAccX();
+
+  //Checks if the PIR sensor is triggered and if so, was it more than robot movement?
+  if (pirValue==HIGH && abs(accelX - lastAccelX) < movementThreshold) {
+    lastAccelX = accelX;
+    /*
+    Enter screaming and buzzer stuff
+    */
+    return true;
+  }
+  return false;
+}
+
 
 void stopMotors() {
   digitalWrite(motorA1, LOW);
