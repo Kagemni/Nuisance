@@ -13,6 +13,7 @@ const int motorB2 = 2;    // IN4 pin on L298N
 int triggerDistance = 20;
 int leftmotorspeed = 200;
 int rightmotorspeed = 200;
+int maxObstDistance = 30;
 
 // Define ultrasonic sensor pins
 const int trigPin = 9;
@@ -22,6 +23,7 @@ const int echoPin = 8;
 unsigned long startTime = 0;
 unsigned long elapsedTime = 0;
 bool isTimerRunning = false;
+int timeRotate = 4000000; //4 seconds?
 
 /*MPU6050 Gyro & Accelerometer
 MPU6050 mpu6050(Wire);
@@ -53,6 +55,12 @@ void loop() {
   timedTurn(true, 5000000);
 }
 
+//timer is the amount of time you want the program to execute something
+void time(int timer) {
+  startTime = micros();
+  while ( (micros() - startTime) < timer ) {}
+}
+
 void moveForward() {
   digitalWrite(motorA1, HIGH);
   digitalWrite(motorA2, LOW);
@@ -62,7 +70,30 @@ void moveForward() {
   analogWrite(motorB_pwm, leftmotorspeed);
 }
 
-//right is 1, left is 0
+//Obstacle detected = true, Obstacle not detected = false.
+bool checkObstacle() {
+  long distance, duration;
+
+  // Trigger ultrasonic sensor
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Read the time taken for the ultrasonic pulse to return
+  duration = pulseIn(echoPin, HIGH, 10000);
+  //Calculate distance of obstacle if there.
+  distance = (duration * 0.0343) / 2;
+  delay(1000);
+
+  if ( distance > maxObstDistance ) {
+    return true;
+  }
+  return false;
+}
+
+//right is 1, left is 0. obst_check = true when rotating for obstacle avoidance
 //Continuous rotation
 void contTurn(bool right) {
 
@@ -85,19 +116,39 @@ void contTurn(bool right) {
     }
 }
 
-//timer is the amount of time you want the program to execute something
-void time(int timer) {
-  startTime = micros();
-  while ( (micros() - startTime) < timer ) {}
+void obstTurn (bool right, int timeRotate) {
+  if (right==true) {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, 0);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, rightmotorspeed);
+  }
+
+  else {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, leftmotorspeed);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, 0);
+  }
+
+  while (checkObstacle()) {}
+  analogWrite(motorA_pwm, 0);
+  analogWrite(motorB_pwm, 0);
+  delay(1000);
+
+  timedTurn(right, timeRotate);
 }
 
 //right is 1, left is 0
 //timed rotation
 void timedTurn(bool right, int timer) {
-  
   startTime = micros();
+  
   while ( (micros() - startTime) < timer ) {
-
     if (right==true) {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
@@ -106,7 +157,6 @@ void timedTurn(bool right, int timer) {
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, rightmotorspeed);
     }
-
     else {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
@@ -115,9 +165,8 @@ void timedTurn(bool right, int timer) {
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, 0);
     }
-    
-    analogWrite(motorA_pwm, 0);
-    analogWrite(motorB_pwm, 0);
+  }
+  stopMotors();
 }
 
 void stopMotors() {
@@ -129,22 +178,7 @@ void stopMotors() {
   analogWrite(motorB_pwm, 0);
 }
 
-int checkDistance() {
-  // Trigger ultrasonic sensor
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+bool checkDirection(int angleOverCompensated) {
+  contTurn(right);
 
-  // Read the time taken for the ultrasonic pulse to return
-  long duration = pulseIn(echoPin, HIGH, 10000);  // Adding a timeout
-
-  // Print raw duration to Serial Monitor
-  Serial.print("Raw Duration: ");
-  Serial.println(duration);
 }
-
-/*bool checkDirection(int angleOverCompensated) {
-  turn(right)
-}*/
