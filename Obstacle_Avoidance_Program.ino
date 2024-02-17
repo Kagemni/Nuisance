@@ -15,8 +15,10 @@ int pirPin = 2;
 int pirState = LOW;
 
 int triggerDistance = 20;
-int normMotorSpeed = 200;
-int HIGHmotorspeed = 400;
+int rightmotorspeed = 200;
+int leftmotorspeed = 200;
+int highRightMotorspeed = 400;
+int highLeftMotorspeed = 400;
 int maxObstDistance = 30;
 
 // Define ultrasonic sensor pins DONE!!!!
@@ -47,8 +49,10 @@ void setup() {
   pinMode(motorB2, OUTPUT);
 
   // Ultrasonic sensor pins
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  pinMode(trigPin1, OUTPUT);
+  pinMode(echoPin1, INPUT);
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
 
   /*MPU6050 Gyro & Accelerometer
   Wire.begin();
@@ -94,7 +98,7 @@ bool humanMovement() {
   float accelX = mpu6050.getAccX();
 
   //Checks if the PIR sensor is triggered and if so, was it more than robot movement?
-  if (pirValue==HIGH && abs(accelX - lastAccelX) < movementThreshold) {
+  if (pirValue==HIGH && abs(accelX - lastAccelX) < movementDistThreshold) {
     lastAccelX = accelX;
     /*
     Enter screaming and buzzer stuff
