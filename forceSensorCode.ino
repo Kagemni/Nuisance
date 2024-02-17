@@ -22,10 +22,6 @@ void loop() {
     runAway = false
   }
 
-  if (runAway) {
-    // code to run away and motor logic
-    
-
-  }
+  return runAway;
 
 }
