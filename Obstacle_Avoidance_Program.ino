@@ -23,7 +23,8 @@ const int echoPin = 8;
 unsigned long startTime = 0;
 unsigned long elapsedTime = 0;
 bool isTimerRunning = false;
-int timeRotate = 4000000; //4 seconds?
+int timeRotate = 3500000; //3.5 seconds?
+int stuckTimer = 5000000; //5 seconds?
 
 /*MPU6050 Gyro & Accelerometer
 MPU6050 mpu6050(Wire);
@@ -70,6 +71,15 @@ void moveForward() {
   analogWrite(motorB_pwm, leftmotorspeed);
 }
 
+void stopMotors() {
+  digitalWrite(motorA1, LOW);
+  digitalWrite(motorA2, LOW);
+  analogWrite(motorA_pwm, 0);
+  digitalWrite(motorB1, LOW);
+  digitalWrite(motorB2, LOW);
+  analogWrite(motorB_pwm, 0);
+}
+
 //Obstacle detected = true, Obstacle not detected = false.
 bool checkObstacle() {
   long distance, duration;
@@ -93,62 +103,12 @@ bool checkObstacle() {
   return false;
 }
 
-//right is 1, left is 0. obst_check = true when rotating for obstacle avoidance
-//Continuous rotation
-void contTurn(bool right) {
-
-    if (right==true) {
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, 0);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, rightmotorspeed);
-    }
-
-    else {
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, leftmotorspeed);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, 0);
-    }
-}
-
-void obstTurn (bool right, int timeRotate) {
-  if (right==true) {
-    digitalWrite(motorA1, HIGH);
-    digitalWrite(motorA2, LOW);
-    analogWrite(motorA_pwm, 0);
-    digitalWrite(motorB1, HIGH);
-    digitalWrite(motorB2, LOW);
-    analogWrite(motorB_pwm, rightmotorspeed);
-  }
-
-  else {
-    digitalWrite(motorA1, HIGH);
-    digitalWrite(motorA2, LOW);
-    analogWrite(motorA_pwm, leftmotorspeed);
-    digitalWrite(motorB1, HIGH);
-    digitalWrite(motorB2, LOW);
-    analogWrite(motorB_pwm, 0);
-  }
-
-  while (checkObstacle()) {}
-  analogWrite(motorA_pwm, 0);
-  analogWrite(motorB_pwm, 0);
-  delay(1000);
-
-  timedTurn(right, timeRotate);
-}
-
 //right is 1, left is 0
 //timed rotation
-void timedTurn(bool right, int timer) {
+void timedTurn(bool right) {
   startTime = micros();
   
-  while ( (micros() - startTime) < timer ) {
+  while ( (micros() - startTime) < timeRotate ) {
     if (right==true) {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
@@ -169,16 +129,42 @@ void timedTurn(bool right, int timer) {
   stopMotors();
 }
 
-void stopMotors() {
-  digitalWrite(motorA1, LOW);
-  digitalWrite(motorA2, LOW);
-  analogWrite(motorA_pwm, 0);
-  digitalWrite(motorB1, LOW);
-  digitalWrite(motorB2, LOW);
-  analogWrite(motorB_pwm, 0);
+//right is 1, left is 0
+void obstTurn (bool right) {
+  if (right==true) {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, 0);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, rightmotorspeed);
+  }
+
+  else {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, leftmotorspeed);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, 0);
+  }
+
+  while (checkObstacle()) {}
+  stopMotors();
+  delay(1500);
+
+  //To make it stop when it's stuck
+  /*int s2 = micros();
+  bool obst = true;
+  while ( (micros() - s2) < stuckTimer && obst==true ) {
+    if (!checkObstacle()) {
+      stopMotors();
+      obst = false;
+      delay(1000);
+      timedTurn(right, timeRotate);
+    }
+  }
+  Serial.print("I'M STUCK");*/
+
 }
 
-bool checkDirection(int angleOverCompensated) {
-  contTurn(right);
-
-}
