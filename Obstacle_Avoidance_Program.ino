@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <NewPing.h>
+#include <MPU6050_tockn.h>
 
 // Define motor control pins
 const int motorA_pwm = 5; // ENA pin on L298N
@@ -17,6 +18,15 @@ int rightmotorspeed = 200;
 const int trigPin = 9;
 const int echoPin = 8;
 
+// Timer in microseconds
+unsigned long startTime = 0;
+unsigned long elapsedTime = 0;
+bool isTimerRunning = false;
+
+/*MPU6050 Gyro & Accelerometer
+MPU6050 mpu6050(Wire);
+float elapsedTime = 0.01;*/
+
 void setup() {
   // Motor control pins as OUTPUT
   pinMode(motorA_pwm, OUTPUT);
@@ -30,20 +40,17 @@ void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
+  /*MPU6050 Gyro & Accelerometer
+  Wire.begin();
+  mpu6050.begin();
+  mpu6050.calcGyroOffsets(true);*/
+
   // Initialize Serial Monitor
   Serial.begin(9600);
 }
 
 void loop() {
-   // Move forward for 1 second
-  if (checkDistance() < 14) {
-    stopMotors();
-    delay(500);
-    turnRight();
-    delay(500);  // Turn right for 1 second
-    stopMotors();
-    delay(500);
-  }
+  timedTurn(true, 5000000);
 }
 
 void moveForward() {
@@ -56,24 +63,61 @@ void moveForward() {
 }
 
 //right is 1, left is 0
-void turn(bool right) {
+//Continuous rotation
+void contTurn(bool right) {
 
-  if (right==true) {
-    digitalWrite(motorA1, HIGH);
-    digitalWrite(motorA2, LOW);
+    if (right==true) {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, 0);
+      digitalWrite(motorB1, HIGH);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, rightmotorspeed);
+    }
+
+    else {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, leftmotorspeed);
+      digitalWrite(motorB1, HIGH);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, 0);
+    }
+}
+
+//timer is the amount of time you want the program to execute something
+void time(int timer) {
+  startTime = micros();
+  while ( (micros() - startTime) < timer ) {}
+}
+
+//right is 1, left is 0
+//timed rotation
+void timedTurn(bool right, int timer) {
+  
+  startTime = micros();
+  while ( (micros() - startTime) < timer ) {
+
+    if (right==true) {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, 0);
+      digitalWrite(motorB1, HIGH);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, rightmotorspeed);
+    }
+
+    else {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, leftmotorspeed);
+      digitalWrite(motorB1, HIGH);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, 0);
+    }
+    
     analogWrite(motorA_pwm, 0);
-    digitalWrite(motorB1, HIGH);
-    digitalWrite(motorB2, LOW);
-    analogWrite(motorB_pwm, rightmotorspeed);
-  }
-  else {
-    digitalWrite(motorA1, HIGH);
-    digitalWrite(motorA2, LOW);
-    analogWrite(motorA_pwm, leftmotorspeed);
-    digitalWrite(motorB1, HIGH);
-    digitalWrite(motorB2, LOW);
     analogWrite(motorB_pwm, 0);
-  }
 }
 
 void stopMotors() {
@@ -101,6 +145,6 @@ int checkDistance() {
   Serial.println(duration);
 }
 
-bool checkDirection(int angleCheck, int angleOverCompensated) {
-
-}
+/*bool checkDirection(int angleOverCompensated) {
+  turn(right)
+}*/
