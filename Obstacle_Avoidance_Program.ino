@@ -55,22 +55,25 @@ void moveForward() {
   analogWrite(motorB_pwm, leftmotorspeed);
 }
 
-void turnRight() {
-  digitalWrite(motorA1, HIGH);
-  digitalWrite(motorA2, LOW);
-  analogWrite(motorA_pwm, 0);
-  digitalWrite(motorB1, HIGH);
-  digitalWrite(motorB2, LOW);
-  analogWrite(motorB_pwm, rightmotorspeed);
-}
+//right is 1, left is 0
+void turn(bool right) {
 
-void turnLeft() {
-  digitalWrite(motorA1, HIGH);
-  digitalWrite(motorA2, LOW);
-  analogWrite(motorA_pwm, leftmotorspeed);
-  digitalWrite(motorB1, HIGH);
-  digitalWrite(motorB2, LOW);
-  analogWrite(motorB_pwm, 0);
+  if (right==true) {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, 0);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, rightmotorspeed);
+  }
+  else {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, leftmotorspeed);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, 0);
+  }
 }
 
 void stopMotors() {
@@ -96,9 +99,8 @@ int checkDistance() {
   // Print raw duration to Serial Monitor
   Serial.print("Raw Duration: ");
   Serial.println(duration);
+}
 
-  // Calculate distance in cm
+bool checkDirection(int angleCheck, int angleOverCompensated) {
 
-bool checkDirection() {
-  
 }
