@@ -167,7 +167,7 @@ bool humanMovement();
 void obstTurn (bool right);
 void stopMotors();
 bool checkObstacle();
-void timedTurn(bool right);
+void timedTurn(bool right)
 void obstTurn (bool right);
 void rickrollPlay();
 bool phoneDetected();
@@ -237,6 +237,19 @@ void loop() {
     stopMotors();
   }*/
   humanMovementOnlyPIR();
+
+  
+
+  /**************************************************************
+  while (analogRead(forceSensorPin) + two of karim's boolean flags) {
+    wondering();
+  }
+
+
+
+
+
+  */
   //Serial.println(state);
 }
 
@@ -247,7 +260,7 @@ void time(int timer) {
 }
 
 void moveForward() {
-  //while (!checkObstacle()) {
+  while (!checkObstacle()) {
     Serial.println(checkObstacle());
     digitalWrite(motorA1, HIGH);
     digitalWrite(motorA2, LOW);
@@ -255,9 +268,9 @@ void moveForward() {
     digitalWrite(motorB1, HIGH);
     digitalWrite(motorB2, LOW);
     analogWrite(motorB_pwm, rightmotorspeed);
-  //}
-  //obstTurn(true);
-  //Serial.println(checkObstacle());
+  }
+  obstTurn(true);
+  Serial.println(checkObstacle());
 }
 
 //returns true if human movement detected, and false if not
@@ -296,6 +309,13 @@ bool humanMovementOnlyPIR() {
     pirState = LOW;
   }*/
   return false;
+}
+
+bool wondering() {
+  while (!digitalRead(pirPin) && analogRead(forceSensorPin)) {
+    moveForward();
+  }
+
 }
 
 void stopMotors() {
@@ -375,34 +395,33 @@ bool checkObstacle() {
 //right is 1, left is 0
 //timed rotation
 void timedTurn(bool right) {
-  
-    if (right==false) {
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, 0);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, rightmotorspeed);
-      Serial.println("left turn.");
-      delay(5000);
-
-    }
-    else {
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, leftmotorspeed);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, 0);
-      Serial.println("right turn.");
-      delay(5000);
-    }
-    
-  Serial.println("Ended turn.");
+  if (right==false) {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, 0);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, rightmotorspeed);
+    Serial.println("left turn.");
+  }
+  else {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, leftmotorspeed);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, 0);
+    Serial.println("right turn.");
+  }
+  unsigned long int t = millis();
+  delay(timeRotate);
   stopMotors();
-  delay(1000);
+  //return t;
 }
 
+//returns 1 if program executed like normal aka obstacle avoidance
+//returns 2 if PIR sensor is triggered
+//returns 3 if force sensor loses phone
 //right is 1, left is 0
 int obstTurn (bool right) {
   bool humanChase = humanMovementOnlyPIR;
@@ -427,8 +446,10 @@ int obstTurn (bool right) {
       analogWrite(motorB_pwm, 0);
     }
   }
-
-  if (humanChase) {
+  else if (/*force sensor reading*/) {
+    return 3;
+  }
+  else {
     return 2;
   }
 
@@ -436,9 +457,20 @@ int obstTurn (bool right) {
   delay(2000);
 
   timedTurn(true);
+  delay(timeRotate);
   stopMotors();
   delay(1500);
-
+  humanChase = humanMovementOnlyPIR;
+  Serial.println(humanChase);
+  if (humanChase) {
+    return 2;
+  }
+  else if (/*force sensor reading*/) {
+    return 3;
+  }
+  else {
+    return 1;
+  }
   //To make it stop when it's stuck
   /*int s2 = micros();
   bool obst = true;
@@ -479,7 +511,7 @@ bool screamTrigger(){
     Serial.println("loud");
   }else{
     return false;
-    Serial.println("quite");
+    Serial.println("quiet");
   }
 }
 
@@ -543,7 +575,6 @@ void blastOff(){
   }
 }
  
-
 void pickUpThePhone(){
   while (phonePickedUp == true){
     minutes = 0;
@@ -581,3 +612,4 @@ void updateDisplayZero(int minutes,int seconds) {
   oled.println(seconds);
   oled.display();
 }
+
