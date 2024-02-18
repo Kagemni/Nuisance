@@ -13,6 +13,7 @@ const int motorB2 = 2;    // IN4 pin on L298N
 //PIR pin
 int pirPin = 2;
 int pirState = LOW;
+//int speaker = ;
 
 int triggerDistance = 20;
 int rightmotorspeed = 150;
@@ -25,7 +26,7 @@ int maxObstDistance = 30;
 const int trigPin1 = 12;
 const int echoPin1 = 11;
 const int trigPin2 = 10;
-const int echoPin2 = 9;
+const int echoPin2 = 9; 
 
 // Timer in microseconds
 unsigned long startTime = 0;
@@ -62,6 +63,9 @@ void setup() {
   pinMode(trigPin2, OUTPUT);
   pinMode(echoPin2, INPUT);
 
+  pinMode(pirPin, INPUT);
+  //pinMode(speaker, OUTPUT);
+
   /*MPU6050 Gyro & Accelerometer
   Wire.begin();
   mpu6050.begin();
@@ -72,14 +76,16 @@ void setup() {
 }
 
 void loop() {
-  //timedTurn(true);
-  bool obstacle_detected = checkObstacle();
+  //moveForward();
+  timedTurn(false);
+  //obstTurn(true);
+  //bool obstacle_detected = checkObstacle();
   delay(5000);
 }
 
 //timer is the amount of time you want the program to execute something
 void time(int timer) {
-  startTime = micros();
+  unsigned long int startTime = micros();
   while ( (micros() - startTime) < timer ) {}
 }
 
@@ -93,8 +99,8 @@ void moveForward() {
     digitalWrite(motorB2, LOW);
     analogWrite(motorB_pwm, leftmotorspeed);
   }
-  obstTurn(true);
-  Serial.println(checkObstacle());
+  //obstTurn(true);
+  //Serial.println(checkObstacle());
 }
 
 //returns true if human movement detected, and false if not
@@ -115,6 +121,19 @@ bool humanMovement() {
   return false;
 }
 
+bool humanMovementOnlyPIR() {
+  float val = digitalRead(pirPin);
+  if ((val == HIGH) && (pirState == LOW)) {
+    Serial.println("HUMAN GET AWAY FROM ME");
+    pirState = HIGH;
+    return true;
+  }
+  /*if (val == LOW && pirState == HIGH) {
+    Serial.println("You've stopped, human. Better it remain that way until your time is done.");
+    pirState = LOW;
+  }*/
+  return false;
+}
 
 void stopMotors() {
   digitalWrite(motorA1, LOW);
@@ -151,21 +170,34 @@ bool checkObstacle() {
   digitalWrite(trigPin2, LOW);
   duration2 = pulseIn(echoPin2, HIGH, timeout_cutoff); // Adjust timeout if needed
 
-  //Print durations
+  /*Print durations
   Serial.print("Duration 1: ");
   Serial.println(duration1);
   Serial.print("Duration 2: ");
-  Serial.println(duration2);
+  Serial.println(duration2);*/
 
   // Calculate distances
-  distance1 = (duration1 * 0.0343) / 2.0000;
-  distance2 = ((double)duration2 * 0.0343) / 2.00000;
+  if (duration1==0 && duration2!=0) {
+    distance1 = 400;
+  }
+  else if (duration2==0 && duration1!=0) 
+  {
+    distance2 = 400;
+  }
+  else if (duration1==0 && duration2==0) {
+    distance1 = 400;
+    distance2 = 400;
+  }
+  else {
+    distance1 = (duration1 * 0.0343) / 2.0000;
+    distance2 = ((double)duration2 * 0.0343) / 2.00000;
+  }
 
-  // Print distances for debugging
+  /* Print distances for debugging
   Serial.print("Distance 1: ");
   Serial.println(distance1);
   Serial.print("Distance 2: ");
-  Serial.println(distance2);
+  Serial.println(distance2);*/
 
   // Check for obstacles
   if (distance1 <= maxObstDistance || distance2 <= maxObstDistance) {
@@ -186,9 +218,8 @@ void timedTurn(bool right) {
   
   unsigned long int micro = micros();
   while ( micro <= (startTime+timeRotate) ) {
+    Serial.println(micro);
     if (right==true) {
-      Serial.println(micro);
-      Serial.println(startTime+timeRotate);
       digitalWrite(motorA1, LOW);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, 0);
@@ -196,7 +227,8 @@ void timedTurn(bool right) {
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, rightmotorspeed);
       Serial.println("right turn.");
-      delay(timeRotate/(10^3));
+      delay(timeRotate*(10^-3));
+
     }
     else {
       digitalWrite(motorA1, HIGH);
@@ -206,7 +238,7 @@ void timedTurn(bool right) {
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, 0);
       Serial.println("left turn.");
-      delay(timeRotate/(10^3));
+      delay(timeRotate*(10^-3));
     }
     micro = micros();
     Serial.println(micro);
@@ -238,6 +270,9 @@ void obstTurn (bool right) {
   }
 
   while (checkObstacle()) {}
+  delay(2000);
+
+  timedTurn(true);
   stopMotors();
   delay(1500);
 
