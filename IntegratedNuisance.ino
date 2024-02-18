@@ -170,7 +170,6 @@ int moveForward() {
       countDown = false;
       updateDisplayZero(minutes,seconds);
       oled.clearDisplay();
-      return;
     }
 
     if (seconds<= 0) {
