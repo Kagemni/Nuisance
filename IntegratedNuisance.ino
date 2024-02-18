@@ -133,7 +133,8 @@ void setup() {
 }
 
 void loop() {
-  int moving = moveForward();
+  timedTurn(true);
+  //int moving = moveForward();
 }
 
 //returns 1 if program executed like normal aka obstacle avoidance
@@ -142,7 +143,7 @@ void loop() {
 int moveForward() {
   bool humanMovement = humanMovementOnlyPIR();
   while (countDown == true) {
-    while (!checkObstacle() && !humanMovement && !phoneDetected()) {
+    while (!checkObstacle() && !humanMovement && phoneDetected()) {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, leftmotorspeed);
@@ -155,14 +156,13 @@ int moveForward() {
     if (humanMovement) {
       return 2;
     }
-    if (phoneDetected()) {
+    if (!phoneDetected()) {
       return 3;
     }
     if (checkObstacle()) {
       obstTurn(true);
       Serial.println(checkObstacle());
     }
-    return 1;
     
     seconds = seconds - 2;
 
@@ -189,7 +189,7 @@ int moveForward() {
     }
     delay (1000);
 
-    while (!checkObstacle() && !humanMovement && !phoneDetected()) {
+    while (!checkObstacle() && !humanMovement && phoneDetected()) {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, leftmotorspeed);
@@ -202,7 +202,7 @@ int moveForward() {
     if (humanMovement) {
       return 2;
     }
-    if (phoneDetected()) {
+    if (!phoneDetected()) {
       return 3;
     }
     if (checkObstacle()) {
@@ -211,6 +211,7 @@ int moveForward() {
     }
     return 1;
   }
+  return 1;
 }
 
 int runaway () {
@@ -221,6 +222,7 @@ int runaway () {
       move = moveForward();
     }
     if (move==3) {
+      stopMotors();
       //wompWompNoises();
       Serial.println("Womp Womp Woooooooomp");
     }
@@ -239,6 +241,7 @@ bool wondering() {
   if (move==3) {
     //wompWompNoises();
     Serial.println("Womp Womp Woooooooomp");
+    stopMotors();
   }
 }
 
@@ -388,7 +391,6 @@ int obstTurn (bool right) {
       analogWrite(motorB_pwm, 0);
   }
   while (checkObstacle()) {}
-  delay(2000);
 
   timedTurn(true);
   delay(timeRotate);
@@ -399,7 +401,7 @@ int obstTurn (bool right) {
   if (humanChase) {
     return 2;
   }
-  else if (phoneDetected()) {
+  else if (!phoneDetected()) {
     return 3;
   }
   else {
