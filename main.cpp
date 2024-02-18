@@ -44,7 +44,8 @@ const int echoPin2 = 9;
 // Timer in microseconds
 unsigned long startTime = 0;
 bool isTimerRunning = false;
-int timeRotate = 400000; //3.5 seconds?
+int timeRotate = 1000; //4 seconds?
+unsigned long lastTurn = 0;
 int stuckTimer = 5000000; //5 seconds?
 
 //MPU6050 Gyro & Accelerometer
@@ -58,7 +59,7 @@ bool humanMovement();
 void obstTurn (bool right);
 void stopMotors();
 bool checkObstacle();
-void timedTurn(bool right);
+unsigned long int timedTurn(bool right);
 void obstTurn (bool right);
 bool phoneDetected();
 bool screamTrigger();
@@ -93,14 +94,21 @@ void setup() {
   Serial.begin(9600);
 }
 
+
+
 void loop() {
   screamTrigger();
   if (state == WAIT_FOR_PHONE){
 
     if (phoneDetected()) state = RUN_AWAY;
   } else if(state == RUN_AWAY){
-
-    if (screamTrigger()) state = DOMINATED;
+    
+    if(lastTurn == 0) lastTurn = timedTurn(false);
+    else if(millis() >= lastTurn+timeRotate){
+      stopMotors();
+      delay(1000);
+      lastTurn = 0;
+    }
   } else if(state == DOMINATED){
     stopMotors();
   }
@@ -235,33 +243,26 @@ bool checkObstacle() {
 
 //right is 1, left is 0
 //timed rotation
-void timedTurn(bool right) {
-  
-    if (right==false) {
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, 0);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, rightmotorspeed);
-      Serial.println("left turn.");
-      delay(5000);
-
-    }
-    else {
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, leftmotorspeed);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, 0);
-      Serial.println("right turn.");
-      delay(5000);
-    }
-    
-  Serial.println("Ended turn.");
-  stopMotors();
-  delay(1000);
+unsigned long int timedTurn(bool right) {
+  if (right==false) {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, 0);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, rightmotorspeed);
+    Serial.println("left turn.");
+  }
+  else {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    analogWrite(motorA_pwm, leftmotorspeed);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorB_pwm, 0);
+    Serial.println("right turn.");
+  }
+  return millis();
 }
 
 //right is 1, left is 0
