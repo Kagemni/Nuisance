@@ -17,7 +17,7 @@ int pirState = LOW;
 
 int triggerDistance = 20;
 int rightmotorspeed = 150;
-int leftmotorspeed = 150;
+int leftmotorspeed = 200;
 int highRightMotorspeed = 200;
 int highLeftMotorspeed = 200;
 int maxObstDistance = 30;
@@ -76,11 +76,13 @@ void setup() {
 }
 
 void loop() {
-  //moveForward();
-  timedTurn(false);
+  moveForward();
+  //timedTurn(false);
   //obstTurn(true);
   //bool obstacle_detected = checkObstacle();
-  delay(5000);
+  //delay(5000);
+  //timedTurn(true);
+  //delay(2000);
 }
 
 //timer is the amount of time you want the program to execute something
@@ -90,15 +92,15 @@ void time(int timer) {
 }
 
 void moveForward() {
-  while (!checkObstacle()) {
+  //while (!checkObstacle()) {
     Serial.println(checkObstacle());
     digitalWrite(motorA1, HIGH);
     digitalWrite(motorA2, LOW);
-    analogWrite(motorA_pwm, rightmotorspeed);
+    analogWrite(motorA_pwm, leftmotorspeed);
     digitalWrite(motorB1, HIGH);
     digitalWrite(motorB2, LOW);
-    analogWrite(motorB_pwm, leftmotorspeed);
-  }
+    analogWrite(motorB_pwm, rightmotorspeed);
+  //}
   //obstTurn(true);
   //Serial.println(checkObstacle());
 }
@@ -212,37 +214,29 @@ bool checkObstacle() {
 //right is 1, left is 0
 //timed rotation
 void timedTurn(bool right) {
-  unsigned long int startTime = micros();
-  Serial.println("Starting turn.");
-  Serial.println(startTime);
   
-  unsigned long int micro = micros();
-  while ( micro <= (startTime+timeRotate) ) {
-    Serial.println(micro);
-    if (right==true) {
-      digitalWrite(motorA1, LOW);
+    if (right==false) {
+      digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, 0);
       digitalWrite(motorB1, HIGH);
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, rightmotorspeed);
-      Serial.println("right turn.");
-      delay(timeRotate*(10^-3));
+      Serial.println("left turn.");
+      delay(5000);
 
     }
     else {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, leftmotorspeed);
-      digitalWrite(motorB1, LOW);
+      digitalWrite(motorB1, HIGH);
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, 0);
-      Serial.println("left turn.");
-      delay(timeRotate*(10^-3));
+      Serial.println("right turn.");
+      delay(5000);
     }
-    micro = micros();
-    Serial.println(micro);
-  }
+    
   Serial.println("Ended turn.");
   stopMotors();
   delay(1000);
