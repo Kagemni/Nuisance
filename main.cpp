@@ -172,7 +172,8 @@ void timedTurn(bool right) {
   Serial.println(startTime);
   
   unsigned long int micro = micros();
-  while ( micro <= (micro+timeRotate) ) {
+  while ( micro <= (startTime+timeRotate) ) {
+    micro = micros();
     if (right==true) {
       Serial.println(micro);
       digitalWrite(motorA1, HIGH);
