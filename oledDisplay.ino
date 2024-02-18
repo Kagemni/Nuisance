@@ -62,28 +62,6 @@ void updateDisplayZero(int minutes,int seconds) {
 
 void loop() {
 
-/*  
-while (millis() <=  totalMinutes *600000000000000000){
-  seconds = seconds - 1;
-
-  if (seconds<= 0) {
-      seconds = 59;
-      minutes = minutes - 1;
-    if (minutes <= 0 && seconds <=0) {
-        oled.clearDisplay();
-        break; 
-
-    }
-}
-  if (seconds <10){
-    updateDisplayZero(minutes,seconds);
-  } else{
-  updateDisplay(minutes, seconds);
-  }
-  delay (1000);
-}
- */
-
 while (countDown == true) {
 seconds = seconds - 1;
 
