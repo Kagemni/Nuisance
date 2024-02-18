@@ -2,6 +2,13 @@
 #include <NewPing.h>
 #include <MPU6050_tockn.h>
 
+//Define state
+#define WAIT_FOR_PHONE 0
+#define RUN_AWAY 1
+#define DOMINATED 2
+
+int state = WAIT_FOR_PHONE;
+
 // Define motor control pins
 const int motorA_pwm = 5; // ENA pin on L298N
 const int motorA1 = 7;    // IN1 pin on L298N
@@ -14,9 +21,16 @@ const int motorB2 = 2;    // IN4 pin on L298N
 int pirPin = 2;
 int pirState = LOW;
 
+//force pin
+const int forceSensorPin = A0;
+
+//mic pin
+const int micPin = 28;
+//int speaker = ;
+
 int triggerDistance = 20;
-int rightmotorspeed = 100;
-int leftmotorspeed = 100;
+int rightmotorspeed = 150;
+int leftmotorspeed = 200;
 int highRightMotorspeed = 200;
 int highLeftMotorspeed = 200;
 int maxObstDistance = 30;
@@ -25,7 +39,7 @@ int maxObstDistance = 30;
 const int trigPin1 = 12;
 const int echoPin1 = 11;
 const int trigPin2 = 10;
-const int echoPin2 = 9;
+const int echoPin2 = 9; 
 
 // Timer in microseconds
 unsigned long startTime = 0;
@@ -46,6 +60,8 @@ void stopMotors();
 bool checkObstacle();
 void timedTurn(bool right);
 void obstTurn (bool right);
+bool phoneDetected();
+bool screamTrigger();
 
 void setup() {
   // Motor control pins as OUTPUT
@@ -62,39 +78,53 @@ void setup() {
   pinMode(trigPin2, OUTPUT);
   pinMode(echoPin2, INPUT);
 
+  pinMode(micPin, INPUT);
+
+  pinMode(pirPin, INPUT);
+  //pinMode(speaker, OUTPUT);
+
   /*MPU6050 Gyro & Accelerometer
   Wire.begin();
   mpu6050.begin();
   mpu6050.calcGyroOffsets(true);*/
 
   // Initialize Serial Monitor
+  state = WAIT_FOR_PHONE;
   Serial.begin(9600);
 }
 
 void loop() {
-  timedTurn(true);
-  //bool obstacle_detected = checkObstacle();
-  delay(5000);
+  screamTrigger();
+  if (state == WAIT_FOR_PHONE){
+
+    if (phoneDetected()) state = RUN_AWAY;
+  } else if(state == RUN_AWAY){
+
+    if (screamTrigger()) state = DOMINATED;
+  } else if(state == DOMINATED){
+    stopMotors();
+  }
+  Serial.println(state);
 }
 
 //timer is the amount of time you want the program to execute something
 void time(int timer) {
-  startTime = micros();
+  unsigned long int startTime = micros();
   while ( (micros() - startTime) < timer ) {}
 }
 
 void moveForward() {
-  while (!checkObstacle()) {
+  //while (!checkObstacle()) {
     Serial.println(checkObstacle());
     digitalWrite(motorA1, HIGH);
     digitalWrite(motorA2, LOW);
-    analogWrite(motorA_pwm, rightmotorspeed);
+    analogWrite(motorA_pwm, leftmotorspeed);
     digitalWrite(motorB1, HIGH);
     digitalWrite(motorB2, LOW);
-    analogWrite(motorB_pwm, leftmotorspeed);
-  }
-  obstTurn(true);
-  Serial.println(checkObstacle());
+    analogWrite(motorB_pwm, rightmotorspeed);
+  //}
+  //obstTurn(true);
+  //Serial.println(checkObstacle());
 }
 
 //returns true if human movement detected, and false if not
@@ -115,6 +145,19 @@ bool humanMovement() {
   return false;
 }
 
+bool humanMovementOnlyPIR() {
+  float val = digitalRead(pirPin);
+  if ((val == HIGH) && (pirState == LOW)) {
+    Serial.println("HUMAN GET AWAY FROM ME");
+    pirState = HIGH;
+    return true;
+  }
+  /*if (val == LOW && pirState == HIGH) {
+    Serial.println("You've stopped, human. Better it remain that way until your time is done.");
+    pirState = LOW;
+  }*/
+  return false;
+}
 
 void stopMotors() {
   digitalWrite(motorA1, LOW);
@@ -151,21 +194,34 @@ bool checkObstacle() {
   digitalWrite(trigPin2, LOW);
   duration2 = pulseIn(echoPin2, HIGH, timeout_cutoff); // Adjust timeout if needed
 
-  //Print durations
+  /*Print durations
   Serial.print("Duration 1: ");
   Serial.println(duration1);
   Serial.print("Duration 2: ");
-  Serial.println(duration2);
+  Serial.println(duration2);*/
 
   // Calculate distances
-  distance1 = (duration1 * 0.0343) / 2.0000;
-  distance2 = ((double)duration2 * 0.0343) / 2.00000;
+  if (duration1==0 && duration2!=0) {
+    distance1 = 400;
+  }
+  else if (duration2==0 && duration1!=0) 
+  {
+    distance2 = 400;
+  }
+  else if (duration1==0 && duration2==0) {
+    distance1 = 400;
+    distance2 = 400;
+  }
+  else {
+    distance1 = (duration1 * 0.0343) / 2.0000;
+    distance2 = ((double)duration2 * 0.0343) / 2.00000;
+  }
 
-  // Print distances for debugging
+  /* Print distances for debugging
   Serial.print("Distance 1: ");
   Serial.println(distance1);
   Serial.print("Distance 2: ");
-  Serial.println(distance2);
+  Serial.println(distance2);*/
 
   // Check for obstacles
   if (distance1 <= maxObstDistance || distance2 <= maxObstDistance) {
@@ -180,37 +236,29 @@ bool checkObstacle() {
 //right is 1, left is 0
 //timed rotation
 void timedTurn(bool right) {
-  unsigned long int startTime = micros();
-  Serial.println("Starting turn.");
-  Serial.println(startTime);
   
-  unsigned long int micro = micros();
-  while ( micro <= (startTime+timeRotate) ) {
-    if (right==true) {
-      Serial.println(micro);
-      Serial.println(startTime+timeRotate);
-      digitalWrite(motorA1, LOW);
+    if (right==false) {
+      digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, 0);
       digitalWrite(motorB1, HIGH);
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, rightmotorspeed);
-      Serial.println("right turn.");
-      delay(timeRotate/(10^3));
+      Serial.println("left turn.");
+      delay(5000);
+
     }
     else {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, leftmotorspeed);
-      digitalWrite(motorB1, LOW);
+      digitalWrite(motorB1, HIGH);
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, 0);
-      Serial.println("left turn.");
-      delay(timeRotate/(10^3));
+      Serial.println("right turn.");
+      delay(5000);
     }
-    micro = micros();
-    Serial.println(micro);
-  }
+    
   Serial.println("Ended turn.");
   stopMotors();
   delay(1000);
@@ -238,6 +286,9 @@ void obstTurn (bool right) {
   }
 
   while (checkObstacle()) {}
+  delay(2000);
+
+  timedTurn(true);
   stopMotors();
   delay(1500);
 
@@ -253,4 +304,34 @@ void obstTurn (bool right) {
     }
   }
   Serial.println("I'M STUCK");*/
+}
+
+bool phoneDetected(){
+  int runAway;
+  int analogReading = analogRead(forceSensorPin);
+
+  // Serial.print("Force sensor reading = ");
+  // // for data, remove when done
+  // Serial.print(analogReading); 
+  
+
+
+  if (analogReading >= 20) {
+    runAway = true;
+
+  } else {
+    runAway = false;
+  }
+
+  return runAway;
+}
+
+bool screamTrigger(){
+  if (digitalRead(micPin) == LOW){
+    return true;
+    Serial.println("loud");
+  }else{
+    return false;
+    Serial.println("quite");
+  }
 }
