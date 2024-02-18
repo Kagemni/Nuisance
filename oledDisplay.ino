@@ -36,7 +36,7 @@ void setup() {
 }
 void blastOff(){
   if (countDown == false && phonePickedUp == false) {
-    //happyBirthdayGrandma  ();
+    happyBirthdayGrandma
   }
 }
  
@@ -45,7 +45,7 @@ void pickUpThePhone(){
   while (phonePickedUp == true){
     minutes = 0;
     seconds = 0;
-    //play wompWompAudio();
+    wompWompAudio();
   } 
 }
 
