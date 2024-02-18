@@ -31,10 +31,6 @@ and a **lot** of cardboard
 
 *and some software*
 
-
-# How to integrate
-N/a?
-
 ## Challenges
 We had an issue during the debugging phase of our code regarding the Ultrasonic Sensors. No matter what was done, they just seemed to constantly be timing out. After looking extensively into the issue, we figured out that the issue was neither hardware nor software related. The breadboard had sporadic faulty pins that we had to be considerate of. Thus causing us to test the rest of the breadboard for integrity.
 
@@ -42,10 +38,12 @@ We also had issues with the collision detection algorithm at first. However, wit
 
 Accomplishments that we're proud of
 ## Accomplishments that we're proud of
-High fives to the team 🙌, as we ...
+High fives to the team and all our efforts. We spent a lot of hours debugging both hardware and software issues and came out *mostly* on top. We all learned a lot about not only arduinos but the various libraries and techniques that can be supplemented by them.
 
-## What we learned
-- wee woo wee woo
+## What we learned/Improved on
+- How to use Arduinos/microcontrollers
+- debugging both hardware and software
+- Breadboarding and circuit design
 
 ## Collaborators
 This project was made possible by the collaboration of [EemanAleem](https://github.com/EemanAleem), [aseelelwasila](https://github.com/aseelelwasila), and [missingscythe](https://github.com/missingscythe).
