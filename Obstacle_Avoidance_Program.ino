@@ -15,10 +15,10 @@ int pirPin = 2;
 int pirState = LOW;
 
 int triggerDistance = 20;
-int rightmotorspeed = 200;
-int leftmotorspeed = 200;
-int highRightMotorspeed = 400;
-int highLeftMotorspeed = 400;
+int rightmotorspeed = 150;
+int leftmotorspeed = 150;
+int highRightMotorspeed = 200;
+int highLeftMotorspeed = 200;
 int maxObstDistance = 30;
 
 // Define ultrasonic sensor pins DONE!!!!
@@ -29,9 +29,8 @@ const int echoPin2 = 9;
 
 // Timer in microseconds
 unsigned long startTime = 0;
-unsigned long elapsedTime = 0;
 bool isTimerRunning = false;
-int timeRotate = 40000000; //3.5 seconds?
+int timeRotate = 400000; //3.5 seconds?
 int stuckTimer = 5000000; //5 seconds?
 
 //MPU6050 Gyro & Accelerometer
@@ -73,10 +72,9 @@ void setup() {
 }
 
 void loop() {
-  timedTurn(true);
-  delay(2000);
+  //timedTurn(true);
   bool obstacle_detected = checkObstacle();
-  delay(1000);
+  delay(5000);
 }
 
 //timer is the amount of time you want the program to execute something
@@ -129,39 +127,54 @@ void stopMotors() {
 
 //Obstacle detected = true, Obstacle not detected = false.
 bool checkObstacle() {
-  long distance1, distance2, duration1, duration2;
+  float duration1, duration2;
+  float distance1, distance2;
 
-  // Trigger ultrasonic sensor
-  digitalWrite(trigPin1, LOW);
-  digitalWrite(trigPin2, LOW);
+  unsigned long timeout_cutoff = 10000;
+
+  // Trigger ultrasonic sensor 1
+  // digitalWrite(trigPin1, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin1, HIGH);
-  digitalWrite(trigPin2, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin1, LOW);
-  digitalWrite(trigPin2, LOW);
+  duration1 = pulseIn(echoPin1, HIGH, timeout_cutoff); // Adjust timeout if needed
+
+
+  // Trigger ultrasonic sensor 2 after a delay
+  delay(20); // Adjust this delay as needed based on your setup
+
+  // digitalWrite(trigPin2, LOW);
   delayMicroseconds(2);
+  digitalWrite(trigPin2, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin2, LOW);
+  duration2 = pulseIn(echoPin2, HIGH, timeout_cutoff); // Adjust timeout if needed
 
-  // Read the time taken for the ultrasonic pulse to return
-  duration1 = pulseIn(echoPin1, HIGH, 10000);
-  duration2 = pulseIn(echoPin2, HIGH, 10000);
-  //Calculate distance of obstacle if there.
-  distance1 = (duration1 * 0.343) / 2;
-  distance2 = (duration2 * 0.343) / 2;
-  delay(1000);
+  //Print durations
+  Serial.print("Duration 1: ");
+  Serial.println(duration1);
+  Serial.print("Duration 2: ");
+  Serial.println(duration2);
 
-  if ( distance1 >= maxObstDistance or distance2 >= maxObstDistance) {
-    Serial.print("Obstacle Detected at a distance of ");
-    Serial.println("Dist1 = ");
-    Serial.println(distance1);
-    Serial.print(" cm!!!!!!!!");
-    Serial.println("Dist2 = ");
-    Serial.println(distance2);
-    Serial.print(" cm!!!!!!!!");
+  // Calculate distances
+  distance1 = (duration1 * 0.0343) / 2.0000;
+  distance2 = ((double)duration2 * 0.0343) / 2.00000;
+
+  // Print distances for debugging
+  Serial.print("Distance 1: ");
+  Serial.println(distance1);
+  Serial.print("Distance 2: ");
+  Serial.println(distance2);
+
+  // Check for obstacles
+  if (distance1 <= maxObstDistance || distance2 <= maxObstDistance) {
+    Serial.println("Obstacle Detected!");
     return true;
+  } else {
+    Serial.println("No Obstacle Detected.");
+    return false;
   }
-  Serial.println("None can stop me. Not even walls.");
-  return false;
 }
 
 //right is 1, left is 0
@@ -172,29 +185,31 @@ void timedTurn(bool right) {
   Serial.println(startTime);
   
   unsigned long int micro = micros();
-  while ( micros() <= (startTime+timeRotate) ) {
+  while ( micro <= (startTime+timeRotate) ) {
     if (right==true) {
-      Serial.println(micros());
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, leftmotorspeed);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, 0);
-      Serial.println("right turn.");
-      //micro = micros();
-      Serial.println(micros());
-    }
-    else {
-      digitalWrite(motorA1, HIGH);
+      Serial.println(micro);
+      Serial.println(startTime+timeRotate);
+      digitalWrite(motorA1, LOW);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, 0);
       digitalWrite(motorB1, HIGH);
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, rightmotorspeed);
-      //micro = micros();
-      Serial.println("left turn.");
+      Serial.println("right turn.");
+      delay(timeRotate/(10^3));
     }
+    else {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, leftmotorspeed);
+      digitalWrite(motorB1, LOW);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, 0);
+      Serial.println("left turn.");
+      delay(timeRotate/(10^3));
+    }
+    micro = micros();
+    Serial.println(micro);
   }
   Serial.println("Ended turn.");
   stopMotors();
