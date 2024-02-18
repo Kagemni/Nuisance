@@ -7,7 +7,8 @@
 //Define state
 #define WAIT_FOR_PHONE 0
 #define RUN_AWAY 1
-#define DOMINATED 
+#define DOMINATED 2
+#define buzzer 8
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -28,6 +29,7 @@ int totalMinutes = 2;
 int seconds = 0;
 bool countDown = true;
 bool phonePickedUp = false;
+bool flag = true;
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 //PIR pin
@@ -38,7 +40,7 @@ const int forceSensorPin = A0;
 
 //mic pin
 const int micPin = 28;
-//int speaker = ;
+int piezo = 27;
 
 int triggerDistance = 20;
 int rightmotorspeed = 150;
@@ -64,112 +66,14 @@ MPU6050 mpu6050(Wire);
 float lastAccelX = 0.0;
 float movementDistThreshold = 0.5;*/
 
-//Rickroll Setup//*******************************************
-/*  RickRollCode
-
-    AUTHOR: Rowan Packard
-    rowanpackard@gmail.com
-
-    DISCLAIMER: The song "Never Gonna Give You Up" by Rick Astley
-    is not  the creative property of the author. This code simply
-    plays a Piezo buzzer  rendition of the song.
-*/
-
-#define  a3f    208     // 208 Hz
-#define  b3f    233     // 233 Hz
-#define  b3     247     // 247 Hz
-#define  c4     261     // 261 Hz MIDDLE C
-#define  c4s    277     // 277 Hz
-#define  e4f    311     // 311 Hz    
-#define  f4     349     // 349 Hz 
-#define  a4f    415     // 415 Hz  
-#define  b4f    466     // 466 Hz 
-#define  b4     493     //  493 Hz 
-#define  c5     523     // 523 Hz 
-#define  c5s    554     // 554  Hz
-#define  e5f    622     // 622 Hz  
-#define  f5     698     // 698 Hz 
-#define  f5s    740     // 740 Hz
-#define  a5f    831     // 831 Hz 
-
-#define  rest    -1
-
-int piezo = 7; // Connect your piezo buzzer to this pin or change  it to match your circuit!
-
-volatile int beatlength  = 100; // determines tempo
-float beatseparationconstant = 0.3;
-
-int threshold;
-
-int  a; // part index
-int b; // song index
-int c; // lyric index
-
-boolean  flag;
-
-// Parts 1 and 2 (Intro)
-
-int song1_intro_melody[] =
-{c5s,  e5f, e5f, f5, a5f, f5s, f5, e5f, c5s, e5f, rest, a4f, a4f};
-
-int song1_intro_rhythmn[]  =
-{6, 10, 6, 6, 1, 1, 1, 1, 6, 10, 4, 2, 10};
-
-// Parts 3 or 5 (Verse 1)
-
-int  song1_verse1_melody[] =
-{ rest, c4s, c4s, c4s, c4s, e4f, rest, c4, b3f, a3f,
-  rest, b3f, b3f, c4, c4s, a3f, a4f, a4f, e4f,
-  rest, b3f, b3f, c4, c4s, b3f,  c4s, e4f, rest, c4, b3f, b3f, a3f,
-  rest, b3f, b3f, c4, c4s, a3f, a3f, e4f,  e4f, e4f, f4, e4f,
-  c4s, e4f, f4, c4s, e4f, e4f, e4f, f4, e4f, a3f,
-  rest,  b3f, c4, c4s, a3f, rest, e4f, f4, e4f
-};
-
-int song1_verse1_rhythmn[] =
-{  2, 1, 1, 1, 1, 2, 1, 1, 1, 5,
-  1, 1, 1, 1, 3, 1, 2, 1, 5,
-  1, 1, 1, 1, 1,  1, 1, 2, 1, 1, 1, 1, 3,
-  1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 4,
-  5, 1, 1, 1,  1, 1, 1, 1, 2, 2,
-  2, 1, 1, 1, 3, 1, 1, 1, 3
-};
-
-
-//  Parts 4 or 6 (Chorus)
-
-int song1_chorus_melody[] =
-{ b4f, b4f, a4f, a4f,
-  f5, f5, e5f, b4f, b4f, a4f, a4f, e5f, e5f, c5s, c5, b4f,
-  c5s, c5s, c5s, c5s,
-  c5s, e5f, c5, b4f, a4f, a4f, a4f, e5f, c5s,
-  b4f, b4f, a4f, a4f,
-  f5,  f5, e5f, b4f, b4f, a4f, a4f, a5f, c5, c5s, c5, b4f,
-  c5s, c5s, c5s, c5s,
-  c5s, e5f, c5, b4f, a4f, rest, a4f, e5f, c5s, rest
-};
-
-int song1_chorus_rhythmn[]  =
-{ 1, 1, 1, 1,
-  3, 3, 6, 1, 1, 1, 1, 3, 3, 3, 1, 2,
-  1, 1, 1, 1,
-  3, 3, 3, 1, 2, 2, 2, 4, 8,
-  1, 1, 1, 1,
-  3, 3, 6, 1, 1, 1, 1, 3, 3, 3,  1, 2,
-  1, 1, 1, 1,
-  3, 3, 3, 1, 2, 2, 2, 4, 8, 4
-};
-//***********************************************************
-
 void time(int timer);
-void moveForward();
+int moveForward();
 bool humanMovement();
-void obstTurn (bool right);
 void stopMotors();
 bool checkObstacle();
-void timedTurn(bool right)
-void obstTurn (bool right);
-void rickrollPlay();
+void timedTurn(bool right);
+int obstTurn (bool right);
+void getRickRolledLol();
 bool phoneDetected();
 bool screamTrigger();
 void blastOff();
@@ -177,6 +81,11 @@ void pickUpThePhone();
 void areWeThereYet();
 void updateDisplay(int minutes,int seconds);
 void updateDisplayZero(int minutes,int seconds);
+//void wompWompNoises();
+void happyBirthdayGrandma();
+void playNote(char note, int duration);
+void playTone(int tone, int duration);
+
 
 void setup() {
   // Motor control pins as OUTPUT
@@ -192,6 +101,7 @@ void setup() {
   pinMode(echoPin1, INPUT);
   pinMode(trigPin2, OUTPUT);
   pinMode(echoPin2, INPUT);
+  pinMode(buzzer, OUTPUT);
 
   //OLED Display Setup
   // Initialize OLED display with I2C address 0x3C, SDA on A4, and SCL on A5
@@ -212,13 +122,10 @@ void setup() {
   //Noise sensor and PIR sensor
   pinMode(micPin, INPUT);
   pinMode(pirPin, INPUT);
+  bool flag = true;
 
   //Piezo buzzer setup
   pinMode(piezo, OUTPUT);
-  flag = true;
-  a = 4;
-  b = 0;
-  c = 0;
 
   // Initialize Serial Monitor
   state = WAIT_FOR_PHONE;
@@ -226,31 +133,8 @@ void setup() {
 }
 
 void loop() {
-  /*screamTrigger();
-  if (state == WAIT_FOR_PHONE){
+  int moving = moveForward();
 
-    if (phoneDetected()) state = RUN_AWAY;
-  } else if(state == RUN_AWAY){
-
-    if (screamTrigger()) state = DOMINATED;
-  } else if(state == DOMINATED){
-    stopMotors();
-  }*/
-  humanMovementOnlyPIR();
-
-  
-
-  /**************************************************************
-  while (analogRead(forceSensorPin) + two of karim's boolean flags) {
-    wondering();
-  }
-
-
-
-
-
-  */
-  //Serial.println(state);
 }
 
 //timer is the amount of time you want the program to execute something
@@ -259,46 +143,70 @@ void time(int timer) {
   while ( (micros() - startTime) < timer ) {}
 }
 
-void moveForward() {
-  while (!checkObstacle()) {
-    Serial.println(checkObstacle());
+//returns 1 if program executed like normal aka obstacle avoidance
+//returns 2 if PIR sensor is triggered
+//returns 3 if force sensor loses phone
+int moveForward() {
+  bool humanMovement = humanMovementOnlyPIR();
+  while (!checkObstacle() && !humanMovement && !phoneDetected()) {
     digitalWrite(motorA1, HIGH);
     digitalWrite(motorA2, LOW);
     analogWrite(motorA_pwm, leftmotorspeed);
     digitalWrite(motorB1, HIGH);
     digitalWrite(motorB2, LOW);
     analogWrite(motorB_pwm, rightmotorspeed);
+    delay(2000);
+    humanMovement = humanMovementOnlyPIR();
   }
-  obstTurn(true);
-  Serial.println(checkObstacle());
+  if (humanMovement) {
+    return 2;
+  }
+  if (phoneDetected()) {
+    return 3;
+  }
+  if (checkObstacle()) {
+    obstTurn(true);
+    Serial.println(checkObstacle());
+  }
+  return 1;
 }
 
-//returns true if human movement detected, and false if not
-/*bool humanMovement() {
-  //Read PIR and accelerometer's values
-  int pirValue = digitalRead(pirPin);
-  mpu6050.update();
-  float accelX = mpu6050.getAccX();
+int runaway () {
+  getRickRolledLol();
+  while (screamTrigger()) {
+    int move = moveForward();
+    while (move==1 || move==2) {
+      move = moveForward();
+    }
+    if (move==3) {
+      //wompWompNoises();
+      Serial.println("Womp Womp Woooooooomp");
+    }
   }
 
-  //Checks if the PIR sensor is triggered and if so, was it more than robot movement?
-  if (pirValue==HIGH && abs(accelX - lastAccelX) < movementDistThreshold) {
-    lastAccelX = accelX;
-    //Enter screaming and buzzer stuff
-    return true;
-  }
-  return false;
 }
-*/
+
+bool wondering() {
+  int move = moveForward();
+  while (move==1) {
+    move = moveForward();
+  }
+  if (move==2) { //PIR
+    runaway();
+  }
+  if (move==3) {
+    //wompWompNoises();
+    Serial.println("Womp Womp Woooooooomp");
+  }
+}
 
 bool humanMovementOnlyPIR() {
   float pirState = digitalRead(pirPin);
   if (pirState == HIGH) {
     Serial.println("HUMAN GET AWAY FROM ME");
     while (flag == true) {
-      rickrollPlay();
+      getRickRolledLol();
     }
-  }
     delay(3000);
     return true;
   }
@@ -309,13 +217,6 @@ bool humanMovementOnlyPIR() {
     pirState = LOW;
   }*/
   return false;
-}
-
-bool wondering() {
-  while (!digitalRead(pirPin) && analogRead(forceSensorPin)) {
-    moveForward();
-  }
-
 }
 
 void stopMotors() {
@@ -424,10 +325,9 @@ void timedTurn(bool right) {
 //returns 3 if force sensor loses phone
 //right is 1, left is 0
 int obstTurn (bool right) {
-  bool humanChase = humanMovementOnlyPIR;
+  bool humanChase = humanMovementOnlyPIR();
   Serial.println(humanChase);
-  if (!humanChase) {
-    if (right==true) {
+  if (right==true) {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, leftmotorspeed);
@@ -437,22 +337,14 @@ int obstTurn (bool right) {
       Serial.println("right turn.");
     }
 
-    else {
+  else {
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, leftmotorspeed);
       digitalWrite(motorB1, HIGH);
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, 0);
-    }
   }
-  else if (/*force sensor reading*/) {
-    return 3;
-  }
-  else {
-    return 2;
-  }
-
   while (checkObstacle()) {}
   delay(2000);
 
@@ -460,29 +352,17 @@ int obstTurn (bool right) {
   delay(timeRotate);
   stopMotors();
   delay(1500);
-  humanChase = humanMovementOnlyPIR;
+  humanChase = humanMovementOnlyPIR();
   Serial.println(humanChase);
   if (humanChase) {
     return 2;
   }
-  else if (/*force sensor reading*/) {
+  else if (phoneDetected()) {
     return 3;
   }
   else {
     return 1;
   }
-  //To make it stop when it's stuck
-  /*int s2 = micros();
-  bool obst = true;
-  while ( (micros() - s2) < stuckTimer && obst==true ) {
-    if (!checkObstacle()) {
-      stopMotors();
-      obst = false;
-      delay(1000);
-      timedTurn(right, timeRotate);
-    }
-  }
-  Serial.println("I'M STUCK");*/
 }
 
 bool phoneDetected(){
@@ -515,60 +395,6 @@ bool screamTrigger(){
   }
 }
 
-void rickrollPlay() {
-  int notelength;
-  if (a == 1 || a == 2) {
-    // intro
-    notelength  = beatlength * song1_intro_rhythmn[b];
-    if (song1_intro_melody[b] > 0) {
-      tone(piezo, song1_intro_melody[b], notelength);
-    }
-    b++;
-    if (b >= sizeof(song1_intro_melody) / sizeof(int)) {
-      a++;
-      b = 0;
-      c = 0;
-    }
-  }
-  else if (a == 3  || a == 5) {
-    // verse
-    notelength = beatlength * 2 * song1_verse1_rhythmn[b];
-    if (song1_verse1_melody[b] > 0) {
-      Serial.print(lyrics_verse1[c]);
-      tone(piezo, song1_verse1_melody[b], notelength);
-      c++;
-    }
-    b++;
-    if (b >= sizeof(song1_verse1_melody) / sizeof(int)) {
-      a++;
-      b = 0;
-      c = 0;
-    }
-  }
-  else if (a == 4 || a == 6) {
-    // chorus
-    notelength = beatlength * song1_chorus_rhythmn[b];
-    if  (song1_chorus_melody[b] > 0) {
-      Serial.print(lyrics_chorus[c]);
-      tone(piezo, song1_chorus_melody[b], notelength);
-      c++;
-    }
-    b++;
-    if (b >= sizeof(song1_chorus_melody) / sizeof(int)) {
-      Serial.println("");
-      a++;
-      b = 0;
-      c = 0;
-    }
-  }
-  delay(notelength);
-  noTone(piezo);
-  delay(notelength * beatseparationconstant);
-  if (a == 7) { // loop back around to beginning of song
-    a = 1;
-  }
-}
-
 void blastOff(){
   if (countDown == false && phonePickedUp == false) {
     //happyBirthdayGrandma  ();
@@ -580,6 +406,7 @@ void pickUpThePhone(){
     minutes = 0;
     seconds = 0;
     //play wompWompAudio();
+    Serial.println("Womp Womp Woooooooomp");
   } 
 }
 
@@ -613,3 +440,145 @@ void updateDisplayZero(int minutes,int seconds) {
   oled.display();
 }
 
+//Audio Setup//*******************************************
+void playTone(int tone, int duration) {
+  for (long i = 0; i < duration * 1000L; i += tone * 2) {
+    digitalWrite(buzzer, HIGH);
+    delayMicroseconds(tone);
+    digitalWrite(buzzer, LOW);
+    delayMicroseconds(tone);
+  }
+}
+
+void playNote(char note, int duration) {
+  char names[] = {'C', 'D', 'E', 'F', 'G', 'A', 'B',
+                  'c', 'd', 'e', 'f', 'g', 'a', 'b',
+                  'x', 'y' };
+
+  int tones[] = { 1915, 1700, 1519, 1432, 1275, 1136, 1014,
+                   956, 834, 765, 593, 468, 346, 224,
+                   655 , 715 };
+
+  int SPEE = 5;
+
+  // play the tone corresponding to the note name
+  for (int i = 0; i < 17; i++) {
+    if (names[i] == note) {
+      int newduration = duration / SPEE;
+      playTone(tones[i], newduration);
+    }
+  }
+}
+
+void getRickRolledLol() {
+  int a3f = 208;     // 208 Hz
+  int b3f = 233;     // 233 Hz
+  int b3 = 247;      // 247 Hz
+  int c4 = 261;      // 261 Hz MIDDLE C
+  int c4s = 277;     // 277 Hz
+  int e4f = 311;     // 311 Hz    
+  int f4 = 349;      // 349 Hz 
+  int a4f = 415;     // 415 Hz  
+  int b4f = 466;     // 466 Hz 
+  int b4 = 493;      //  493 Hz 
+  int c5 = 523;      // 523 Hz 
+  int c5s = 554;     // 554  Hz
+  int e5f = 622;     // 622 Hz  
+  int f5 = 698;      // 698 Hz 
+  int f5s = 740;     // 740 Hz
+  int a5f = 831;     // 831 Hz 
+
+  int rest = -1;
+
+  volatile int beatlength = 100; // determines tempo
+  float beatseparationconstant = 0.3;
+
+  int threshold;
+
+  int a; // part index
+  int b; // song index
+  int c; // lyric index
+
+  bool flag;
+
+  // Parts 1 and 2 (Intro)
+
+  int song1_intro_melody[] =
+  {c5s,  e5f, e5f, f5, a5f, f5s, f5, e5f, c5s, e5f, rest, a4f, a4f};
+
+  int song1_intro_rhythmn[]  =
+  {6, 10, 6, 6, 1, 1, 1, 1, 6, 10, 4, 2, 10};
+
+  // Parts 3 or 5 (Verse 1)
+
+  int  song1_verse1_melody[] =
+  { rest, c4s, c4s, c4s, c4s, e4f, rest, c4, b3f, a3f,
+    rest, b3f, b3f, c4, c4s, a3f, a4f, a4f, e4f,
+    rest, b3f, b3f, c4, c4s, b3f,  c4s, e4f, rest, c4, b3f, b3f, a3f,
+    rest, b3f, b3f, c4, c4s, a3f, a3f, e4f,  e4f, e4f, f4, e4f,
+    c4s, e4f, f4, c4s, e4f, e4f, e4f, f4, e4f, a3f,
+    rest,  b3f, c4, c4s, a3f, rest, e4f, f4, e4f
+  };
+
+  int song1_verse1_rhythmn[] =
+  {  2, 1, 1, 1, 1, 2, 1, 1, 1, 5,
+    1, 1, 1, 1, 3, 1, 2, 1, 5,
+    1, 1, 1, 1, 1,  1, 1, 2, 1, 1, 1, 1, 3,
+    1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 4,
+    5, 1, 1, 1,  1, 1, 1, 1, 2, 2,
+    2, 1, 1, 1, 3, 1, 1, 1, 3
+  };
+
+  //  Parts 4 or 6 (Chorus)
+
+  int song1_chorus_melody[] =
+  { b4f, b4f, a4f, a4f,
+    f5, f5, e5f, b4f, b4f, a4f, a4f, e5f, e5f, c5s, c5, b4f,
+    c5s, c5s, c5s, c5s,
+    c5s, e5f, c5, b4f, a4f, a4f, a4f, e5f, c5s,
+    b4f, b4f, a4f, a4f,
+    f5,  f5, e5f, b4f, b4f, a4f, a4f, a5f, c5, c5s, c5, b4f,
+    c5s, c5s, c5s, c5s,
+    c5s, e5f, c5, b4f, a4f, rest, a4f, e5f, c5s, rest
+  };
+
+  int song1_chorus_rhythmn[]  =
+  { 1, 1, 1, 1,
+    3, 3, 6, 1, 1, 1, 1, 3, 3, 3, 1, 2,
+    1, 1, 1, 1,
+    3, 3, 3, 1, 2, 2, 2, 4, 8,
+    1, 1, 1, 1,
+    3, 3, 6, 1, 1, 1, 1, 3, 3, 3,  1, 2,
+    1, 1, 1, 1,
+    3, 3, 3, 1, 2, 2, 2, 4, 8, 4
+  };
+
+
+}
+
+void happyBirthdayGrandma() {
+  // Happy birthday here
+  int length = 28; // the number of notes
+  char notes[] = "GGAGcB GGAGdc GGxecBA yyecdc";
+  int beats[] = {2, 2, 8, 8, 8, 16, 1, 2, 2, 8, 8, 8, 16, 1, 2, 2, 8, 8, 8, 8, 16, 1, 2, 2, 8, 8, 8, 16};
+  int tempo = 200; // time delay between notes
+
+  for (int i = 0; i < length; i++) {
+    if (notes[i] == ' ') {
+      delay(beats[i] * tempo); // delay between notes
+    } else {
+      playNote(notes[i], beats[i] * tempo);
+    }
+    // time delay between notes
+    delay(tempo);
+  }
+}
+
+/*void wompWompNoises() {
+  for (int freq = 1000; freq <= 9000; freq += 100) {
+    playTone(buzzer, freq);
+    delay(100);
+  }
+  noTone(buzzer);
+}*/
+//***********************************************************
