@@ -10,7 +10,7 @@ long timeStampStart;
 int totalMinutes = 2;
 int seconds = 0;
 bool countDown = true;
-
+bool phonePickedUp = false;
 
 // Use A4 for SDA and A5 for SCL
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
@@ -70,7 +70,6 @@ seconds = seconds - 1;
       updateDisplayZero(minutes,seconds);
       oled.clearDisplay();
       return;
-
     }
 
   if (seconds<= 0) {
@@ -82,7 +81,6 @@ seconds = seconds - 1;
       }
 }
 
-
   if (seconds <10){
     updateDisplayZero(minutes,seconds);
   } else{
@@ -92,13 +90,18 @@ seconds = seconds - 1;
 
 }
 
-/*
-if (countDown = false) {
-  happyBirthdayGrandma  ();
-
+if (countDown == false && phonePickedUp == false) {
+  //happyBirthdayGrandma  ();
+}
+ 
+while (phonePickedUp == true){
+  minutes = 0;
+  seconds = 0;
+  //play wompWompAudio();
 }
 
-
-*/
+if (dominated == true){
+  exit();
+}
 
 }
