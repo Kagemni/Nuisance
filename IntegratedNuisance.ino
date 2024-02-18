@@ -134,13 +134,6 @@ void setup() {
 
 void loop() {
   int moving = moveForward();
-
-}
-
-//timer is the amount of time you want the program to execute something
-void time(int timer) {
-  unsigned long int startTime = micros();
-  while ( (micros() - startTime) < timer ) {}
 }
 
 //returns 1 if program executed like normal aka obstacle avoidance
@@ -148,27 +141,77 @@ void time(int timer) {
 //returns 3 if force sensor loses phone
 int moveForward() {
   bool humanMovement = humanMovementOnlyPIR();
-  while (!checkObstacle() && !humanMovement && !phoneDetected()) {
-    digitalWrite(motorA1, HIGH);
-    digitalWrite(motorA2, LOW);
-    analogWrite(motorA_pwm, leftmotorspeed);
-    digitalWrite(motorB1, HIGH);
-    digitalWrite(motorB2, LOW);
-    analogWrite(motorB_pwm, rightmotorspeed);
-    delay(2000);
-    humanMovement = humanMovementOnlyPIR();
+  while (countDown == true) {
+    while (!checkObstacle() && !humanMovement && !phoneDetected()) {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, leftmotorspeed);
+      digitalWrite(motorB1, HIGH);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, rightmotorspeed);
+      delay(2000);
+      humanMovement = humanMovementOnlyPIR();
+    }
+    if (humanMovement) {
+      return 2;
+    }
+    if (phoneDetected()) {
+      return 3;
+    }
+    if (checkObstacle()) {
+      obstTurn(true);
+      Serial.println(checkObstacle());
+    }
+    return 1;
+    
+    seconds = seconds - 2;
+
+    if (minutes <= 0 && seconds <=0) {
+      countDown = false;
+      updateDisplayZero(minutes,seconds);
+      oled.clearDisplay();
+      return;
+    }
+
+    if (seconds<= 0) {
+      seconds = 59;
+      minutes = minutes - 1;
+
+      if (minutes == 0 && seconds == 1){
+        seconds = 0;
+      }
+    }
+
+    if (seconds <10){
+      updateDisplayZero(minutes,seconds);
+    } 
+    else{
+      updateDisplay(minutes, seconds);
+    }
+    delay (1000);
+
+    while (!checkObstacle() && !humanMovement && !phoneDetected()) {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, leftmotorspeed);
+      digitalWrite(motorB1, HIGH);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, rightmotorspeed);
+      delay(2000);
+      humanMovement = humanMovementOnlyPIR();
+    }
+    if (humanMovement) {
+      return 2;
+    }
+    if (phoneDetected()) {
+      return 3;
+    }
+    if (checkObstacle()) {
+      obstTurn(true);
+      Serial.println(checkObstacle());
+    }
+    return 1;
   }
-  if (humanMovement) {
-    return 2;
-  }
-  if (phoneDetected()) {
-    return 3;
-  }
-  if (checkObstacle()) {
-    obstTurn(true);
-    Serial.println(checkObstacle());
-  }
-  return 1;
 }
 
 int runaway () {
