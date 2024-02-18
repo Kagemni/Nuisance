@@ -1,5 +1,5 @@
-#define buzzerOne 12
-#define buzzerTwo 13
+#define buzzerOne 14
+#define buzzerTwo 15
 
 bool canIScreamYet = false;
 
