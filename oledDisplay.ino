@@ -34,6 +34,24 @@ void setup() {
   oled.display();               // show on OLED
 
 }
+void blastOff(){
+  if (countDown == false && phonePickedUp == false) {
+    //happyBirthdayGrandma  ();
+  }
+}
+ 
+
+void pickUpThePhone(){
+  while (phonePickedUp == true){
+    minutes = 0;
+    seconds = 0;
+    //play wompWompAudio();
+  } 
+}
+
+void areWeThereYet(){
+    exit(0);
+}
 
 void updateDisplay(int minutes,int seconds) {
   oled.clearDisplay();
@@ -90,24 +108,4 @@ seconds = seconds - 1;
 
 }
 
-void blastOff(){
-  if (countDown == false && phonePickedUp == false) {
-    //happyBirthdayGrandma  ();
-  }
-}
- 
-
-void pickUpThePhone(){
-  while (phonePickedUp == true){
-    minutes = 0;
-    seconds = 0;
-    //play wompWompAudio();
-  } 
-}
-
-void areWeThereYet(){
-  if (dominated == true){
-    exit();
-  }
-}
 }
