@@ -28,7 +28,6 @@
 #define  rest    -1
 
 int piezo = 7; // Connect your piezo buzzer to this pin or change  it to match your circuit!
-int led = LED_BUILTIN; 
 
 volatile int beatlength  = 100; // determines tempo
 float beatseparationconstant = 0.3;
@@ -69,26 +68,6 @@ int song1_verse1_rhythmn[] =
   2, 1, 1, 1, 3, 1, 1, 1, 3
 };
 
-const char* lyrics_verse1[]  =
-{ "We're ", "no ", "strangers ", "", "to ", "love ", "", "\
-\
-",
-  "You ", "know ", "the ", "rules ", "and ", "so ", "do ", "I\
-\
-",
-  "A ", "full ", "commitment's ", "", "", "what ", "I'm ", "thinking  ", "", "of", "\
-\
-",
-  "You ", "wouldn't ", "", "get ", "this  ", "from ", "any ", "", "other ", "", "guy\
-\
-",
-  "I ", "just  ", "wanna ", "", "tell ", "you ", "how ", "I'm ", "feeling", "\
-\
-",
-  "Gotta ", "", "make ", "you ", "understand", "", "\
-\
-"
-};
 
 //  Parts 4 or 6 (Chorus)
 
@@ -114,33 +93,9 @@ int song1_chorus_rhythmn[]  =
   3, 3, 3, 1, 2, 2, 2, 4, 8, 4
 };
 
-const char*  lyrics_chorus[] =
-{ "Never ", "", "gonna ", "", "give ", "you ",  "up\
-\
-",
-  "Never ", "", "gonna ", "", "let ", "you ", "down",  "", "\
-\
-",
-  "Never ", "", "gonna ", "", "run ", "around ",  "", "", "", "and ", "desert ", "", "you\
-\
-",
-  "Never ", "",  "gonna ", "", "make ", "you ", "cry\
-\
-",
-  "Never ", "", "gonna  ", "", "say ", "goodbye ", "", "", "\
-\
-",
-  "Never ", "",  "gonna ", "", "tell ", "a ", "lie ", "", "", "and ", "hurt ",  "you\
-\
-"
-};
-
 void setup()
 {
   pinMode(piezo, OUTPUT);
-  pinMode(led,  OUTPUT);
-
-  digitalWrite(led, LOW);
   Serial.begin(9600);
   flag = true;
   a = 4;
@@ -164,7 +119,6 @@ void  play() {
     // intro
     notelength  = beatlength * song1_intro_rhythmn[b];
     if (song1_intro_melody[b] > 0) {
-      digitalWrite(led, HIGH);
       tone(piezo, song1_intro_melody[b], notelength);
     }
     b++;
@@ -178,7 +132,6 @@ void  play() {
     // verse
     notelength = beatlength * 2 * song1_verse1_rhythmn[b];
     if (song1_verse1_melody[b] > 0) {
-      digitalWrite(led, HIGH);
       Serial.print(lyrics_verse1[c]);
       tone(piezo, song1_verse1_melody[b], notelength);
       c++;
@@ -194,7 +147,6 @@ void  play() {
     // chorus
     notelength = beatlength * song1_chorus_rhythmn[b];
     if  (song1_chorus_melody[b] > 0) {
-      digitalWrite(led, HIGH);
       Serial.print(lyrics_chorus[c]);
       tone(piezo, song1_chorus_melody[b], notelength);
       c++;
@@ -209,7 +161,6 @@ void  play() {
   }
   delay(notelength);
   noTone(piezo);
-  digitalWrite(led, LOW);
   delay(notelength * beatseparationconstant);
   if (a == 7) { // loop back around to beginning of song
     a = 1;
