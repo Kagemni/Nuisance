@@ -29,9 +29,8 @@ const int echoPin2 = 9;
 
 // Timer in microseconds
 unsigned long startTime = 0;
-unsigned long elapsedTime = 0;
 bool isTimerRunning = false;
-int timeRotate = 4000000; //3.5 seconds?
+int timeRotate = 400000; //3.5 seconds?
 int stuckTimer = 5000000; //5 seconds?
 
 //MPU6050 Gyro & Accelerometer
@@ -73,7 +72,8 @@ void setup() {
 }
 
 void loop() {
-  bool obstacle_detected = checkObstacle();
+  timedTurn(true);
+  //bool obstacle_detected = checkObstacle();
   delay(5000);
 }
 
@@ -140,6 +140,7 @@ bool checkObstacle() {
   digitalWrite(trigPin1, LOW);
   duration1 = pulseIn(echoPin1, HIGH, timeout_cutoff); // Adjust timeout if needed
 
+
   // Trigger ultrasonic sensor 2 after a delay
   delay(20); // Adjust this delay as needed based on your setup
 
@@ -150,9 +151,15 @@ bool checkObstacle() {
   digitalWrite(trigPin2, LOW);
   duration2 = pulseIn(echoPin2, HIGH, timeout_cutoff); // Adjust timeout if needed
 
+  //Print durations
+  Serial.print("Duration 1: ");
+  Serial.println(duration1);
+  Serial.print("Duration 2: ");
+  Serial.println(duration2);
+
   // Calculate distances
-  distance1 = (duration1 * 0.0343) / 2.0;
-  distance2 = (duration2 * 0.0343) / 2.0;
+  distance1 = (duration1 * 0.0343) / 2.0000;
+  distance2 = ((double)duration2 * 0.0343) / 2.00000;
 
   // Print distances for debugging
   Serial.print("Distance 1: ");
