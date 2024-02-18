@@ -90,18 +90,24 @@ seconds = seconds - 1;
 
 }
 
-if (countDown == false && phonePickedUp == false) {
-  //happyBirthdayGrandma  ();
+void blastOff(){
+  if (countDown == false && phonePickedUp == false) {
+    //happyBirthdayGrandma  ();
+  }
 }
  
-while (phonePickedUp == true){
-  minutes = 0;
-  seconds = 0;
-  //play wompWompAudio();
+
+void pickUpThePhone(){
+  while (phonePickedUp == true){
+    minutes = 0;
+    seconds = 0;
+    //play wompWompAudio();
+  } 
 }
 
-if (dominated == true){
-  exit();
+void areWeThereYet(){
+  if (dominated == true){
+    exit();
+  }
 }
-
 }
