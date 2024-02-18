@@ -1,0 +1,29 @@
+#include <Arduino.h>
+
+#define buzzer 27
+
+void tone(int pin,float freq){
+  for(int i=0;i<freq;i++)
+    digitalWrite(pin, HIGH);
+    delay(1000.00/freq);
+    digitalWrite(pin, LOW);
+    delay(1000.00/freq);
+}
+
+void wompWompNoises() {
+  for (int freq = 1000; freq <= 9000; freq += 100) {
+    tone(buzzer, freq);
+  }
+  digitalWrite(buzzer, LOW);
+}
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(buzzer, OUTPUT);
+
+}
+
+void loop() {
+  // Turn off both buzzers
+  wompWompNoises();
+}
