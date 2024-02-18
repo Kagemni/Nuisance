@@ -58,7 +58,7 @@ const int echoPin2 = 9;
 // Timer in microseconds
 unsigned long startTime = 0;
 bool isTimerRunning = false;
-int timeRotate = 400000; //3.5 seconds?
+int timeRotate = 40000; //3.5 seconds?
 int stuckTimer = 5000000; //5 seconds?
 
 /*MPU6050 Gyro & Accelerometer
@@ -134,6 +134,9 @@ void setup() {
 
 void loop() {
   timedTurn(true);
+  delay(5000);
+  stopMotors();
+  delay(5000);
   //int moving = moveForward();
 }
 
@@ -265,10 +268,10 @@ bool humanMovementOnlyPIR() {
 }
 
 void stopMotors() {
-  digitalWrite(motorA1, LOW);
+  digitalWrite(motorA1, HIGH);
   digitalWrite(motorA2, LOW);
   analogWrite(motorA_pwm, 0);
-  digitalWrite(motorB1, LOW);
+  digitalWrite(motorB1, HIGH);
   digitalWrite(motorB2, LOW);
   analogWrite(motorB_pwm, 0);
 }
