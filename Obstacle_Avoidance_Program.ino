@@ -31,7 +31,7 @@ const int echoPin2 = 9;
 unsigned long startTime = 0;
 unsigned long elapsedTime = 0;
 bool isTimerRunning = false;
-int timeRotate = 4000000; //3.5 seconds?
+int timeRotate = 40000000; //3.5 seconds?
 int stuckTimer = 5000000; //5 seconds?
 
 //MPU6050 Gyro & Accelerometer
@@ -172,28 +172,27 @@ void timedTurn(bool right) {
   Serial.println(startTime);
   
   unsigned long int micro = micros();
-  while ( micro <= (startTime+timeRotate) ) {
-    micro = micros();
+  while ( micros() <= (startTime+timeRotate) ) {
     if (right==true) {
-      Serial.println(micro);
-      digitalWrite(motorA1, HIGH);
-      digitalWrite(motorA2, LOW);
-      analogWrite(motorA_pwm, 0);
-      digitalWrite(motorB1, HIGH);
-      digitalWrite(motorB2, LOW);
-      analogWrite(motorB_pwm, rightmotorspeed);
-      Serial.println("right turn.");
-      micro = micros();
-      Serial.println(micro);
-    }
-    else {
+      Serial.println(micros());
       digitalWrite(motorA1, HIGH);
       digitalWrite(motorA2, LOW);
       analogWrite(motorA_pwm, leftmotorspeed);
       digitalWrite(motorB1, HIGH);
       digitalWrite(motorB2, LOW);
       analogWrite(motorB_pwm, 0);
-      micro = micros();
+      Serial.println("right turn.");
+      //micro = micros();
+      Serial.println(micros());
+    }
+    else {
+      digitalWrite(motorA1, HIGH);
+      digitalWrite(motorA2, LOW);
+      analogWrite(motorA_pwm, 0);
+      digitalWrite(motorB1, HIGH);
+      digitalWrite(motorB2, LOW);
+      analogWrite(motorB_pwm, rightmotorspeed);
+      //micro = micros();
       Serial.println("left turn.");
     }
   }
@@ -207,10 +206,11 @@ void obstTurn (bool right) {
   if (right==true) {
     digitalWrite(motorA1, HIGH);
     digitalWrite(motorA2, LOW);
-    analogWrite(motorA_pwm, 0);
+    analogWrite(motorA_pwm, leftmotorspeed);
     digitalWrite(motorB1, HIGH);
     digitalWrite(motorB2, LOW);
-    analogWrite(motorB_pwm, rightmotorspeed);
+    analogWrite(motorB_pwm, 0);
+    Serial.println("right turn.");
   }
 
   else {
